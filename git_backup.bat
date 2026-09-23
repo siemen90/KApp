@@ -22,6 +22,9 @@ echo.
 
 cd /d "%~dp0"
 
+echo [Engine] Active runner: %GIT_CMD%
+echo.
+
 echo [1/3] Checking repository status...
 call %GIT_CMD% status --short
 
