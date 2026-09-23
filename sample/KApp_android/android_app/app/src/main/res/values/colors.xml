@@ -1,0 +1,11 @@
+<resources>
+    <color name="karaoke_bg">#0F0F1A</color>
+    <color name="karaoke_card">#1A1A2E</color>
+    <color name="karaoke_primary">#6C63FF</color>
+    <color name="karaoke_secondary">#E94560</color>
+    <color name="karaoke_text">#EAEAEA</color>
+    <color name="karaoke_text_dim">#8888AA</color>
+    <color name="karaoke_success">#00C853</color>
+    <color name="karaoke_warning">#FF9800</color>
+    <color name="karaoke_border">#2A2A4A</color>
+</resources>

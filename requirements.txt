@@ -1,0 +1,15 @@
+yt-dlp
+yt-dlp-ejs
+demucs
+pydub
+pyqt6
+requests
+beautifulsoup4
+simpleaudio
+audioop-lts
+torchcodec
+numpy
+nuitka
+flask
+qrcode[pil]
+zhconv

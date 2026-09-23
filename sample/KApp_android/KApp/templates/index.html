@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Karaoke Remote Control</title>
+    <style>
+        :root {
+            --bg: #0f0f1a;
+            --card: #1a1a2e;
+            --accent: #6c63ff;
+            --accent2: #e94560;
+            --text: #eaeaea;
+            --text-dim: #8888aa;
+            --border: #2a2a4a;
+            --success: #00c853;
+            --warning: #ff9800;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            font-size: 1.35em;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .lang-btn {
+            position: absolute;
+            left: 14px;
+            background: rgba(255, 255, 255, 0.22);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            padding: 4px 11px;
+            border-radius: 16px;
+            font-size: 0.55em;
+            font-weight: 600;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            transition: background 0.2s, transform 0.1s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            z-index: 10;
+        }
+
+        .lang-btn:hover {
+            background: rgba(255, 255, 255, 0.35);
+        }
+
+        .lang-btn:active {
+            transform: scale(0.95);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 16px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: var(--card);
+            color: var(--text-dim);
+            font-size: 1em;
+            cursor: pointer;
+            border-radius: 8px 8px 0 0;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Player Controls */
+        .player-card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .player-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--accent);
+            text-align: center;
+            min-height: 1.4em;
+        }
+
+        .seek-bar-container {
+            margin-bottom: 12px;
+        }
+
+        .seek-bar {
+            width: 100%;
+            height: 6px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: var(--border);
+            border-radius: 3px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .seek-bar::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--accent);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .time-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8em;
+            color: var(--text-dim);
+            margin-top: 4px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        .ctrl-btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .ctrl-btn:active {
+            transform: scale(0.96);
+        }
+
+        .btn-play {
+            background: var(--accent);
+            color: #fff;
+            min-width: 90px;
+            justify-content: center;
+        }
+
+        .btn-stop {
+            background: var(--accent2);
+            color: #fff;
+        }
+
+        .btn-vocal {
+            background: #2d1b69;
+            color: #c4b5fd;
+            border: 1px solid #7c3aed;
+        }
+
+        .btn-vocal.off {
+            background: #064e3b;
+            color: #6ee7b7;
+            border: 1px solid #059669;
+        }
+
+        .volume-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        .volume-slider {
+            flex: 1;
+            height: 6px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: var(--border);
+            border-radius: 3px;
+            outline: none;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            background: var(--accent);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        /* Queue Table */
+        .queue-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--card);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .queue-table th,
+        .queue-table td {
+            padding: 12px 14px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .queue-table th {
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-dim);
+            font-size: 0.85em;
+            text-transform: uppercase;
+        }
+
+        .queue-table tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .queue-table tr.playing {
+            background: rgba(108, 99, 255, 0.15);
+            font-weight: 600;
+        }
+
+        .queue-table tr.playing td:first-child {
+            color: #fff;
+        }
+
+        .queue-table tr.played {
+            background: rgba(40, 40, 55, 0.6);
+            opacity: 0.65;
+        }
+
+        .queue-table tr.played td {
+            color: #9292a8;
+        }
+
+        .status-dim {
+            color: #888899;
+        }
+
+        .btn-action-replay {
+            margin-left: 8px;
+            padding: 3px 8px;
+            background: #4e54c8;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.82em;
+            font-weight: bold;
+            transition: background 0.15s;
+        }
+
+        .btn-action-replay:hover {
+            background: #6c63ff;
+        }
+
+        .status-playing {
+            color: var(--success);
+            font-weight: 700;
+        }
+
+        .status-paused {
+            color: var(--warning);
+            font-weight: 700;
+        }
+
+        .badge-now-playing {
+            display: inline-block;
+            background: var(--accent);
+            color: #fff;
+            font-size: 0.72em;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 4px;
+            margin-right: 8px;
+            vertical-align: middle;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-now-playing.paused {
+            background: var(--warning);
+            color: #000;
+        }
+
+        .status-ready {
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        .status-pending {
+            color: var(--warning);
+        }
+
+        .status-error {
+            color: var(--accent2);
+        }
+
+        .progress-bar-bg {
+            background: var(--border);
+            border-radius: 4px;
+            height: 8px;
+            overflow: hidden;
+            min-width: 80px;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--success));
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+
+        /* Library & Search */
+        .search-box {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text);
+            border-radius: 8px;
+            font-size: 1em;
+            margin-bottom: 12px;
+            outline: none;
+        }
+
+        .search-box:focus {
+            border-color: var(--accent);
+        }
+
+        .library-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: var(--card);
+            border-radius: 8px;
+            margin-bottom: 6px;
+            border: 1px solid var(--border);
+            transition: border-color 0.2s;
+        }
+
+        .library-item:hover {
+            border-color: var(--accent);
+        }
+
+        .library-item .title {
+            flex: 1;
+            font-size: 0.95em;
+        }
+
+        .song-thumb {
+            width: 72px;
+            height: 44px;
+            border-radius: 6px;
+            object-fit: cover;
+            flex-shrink: 0;
+            margin-right: 12px;
+            background: #1e1e2f;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1em;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .song-thumb-local {
+            background: rgba(0, 200, 83, 0.12);
+            border-color: rgba(0, 200, 83, 0.3);
+            color: var(--success);
+        }
+
+        .song-thumb-yt {
+            background: rgba(108, 99, 255, 0.12);
+            border-color: rgba(108, 99, 255, 0.3);
+            color: var(--accent);
+        }
+
+        .btn-add {
+            padding: 6px 14px;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85em;
+            font-weight: 600;
+            white-space: nowrap;
+            transition: background 0.15s;
+        }
+
+        .btn-add:hover {
+            background: #5b52e0;
+        }
+
+        .btn-delete {
+            padding: 6px 12px;
+            background: rgba(233, 69, 96, 0.2);
+            color: var(--accent2);
+            border: 1px solid var(--accent2);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85em;
+            font-weight: 600;
+            white-space: nowrap;
+            transition: all 0.15s;
+        }
+
+        .btn-delete:hover {
+            background: var(--accent2);
+            color: #fff;
+        }
+
+        .empty-msg {
+            text-align: center;
+            color: var(--text-dim);
+            padding: 32px;
+            font-size: 0.95em;
+        }
+
+        .connection-status {
+            position: fixed;
+            top: 8px;
+            right: 12px;
+            font-size: 0.75em;
+            padding: 4px 10px;
+            border-radius: 12px;
+            z-index: 100;
+        }
+
+        .connected {
+            background: var(--success);
+            color: #000;
+        }
+
+        .disconnected {
+            background: var(--accent2);
+            color: #fff;
+        }
+
+        /* Toast Notification Popup */
+        .toast-popup {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: rgba(30, 30, 50, 0.96);
+            color: #ffffff;
+            padding: 12px 22px;
+            border-radius: 30px;
+            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5);
+            border: 1.5px solid var(--accent);
+            font-size: 0.95em;
+            font-weight: 600;
+            z-index: 99999;
+            pointer-events: none;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            max-width: 90%;
+            backdrop-filter: blur(8px);
+        }
+
+        .toast-popup.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .toast-popup .toast-icon {
+            font-size: 1.25em;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="toastNotification" class="toast-popup"></div>
+    <div class="header">
+        <button id="btnLang" class="lang-btn" onclick="toggleLanguage()">🌐 中文</button>
+        <span id="headerTitle">🎤 Karaoke Remote</span>
+    </div>
+    <div id="connStatus" class="connection-status disconnected">Disconnected</div>
+
+    <div class="container">
+        <!-- Player Card -->
+        <div class="player-card">
+            <div class="player-title" id="nowPlaying">No song playing</div>
+            <div class="seek-bar-container">
+                <input type="range" class="seek-bar" id="seekBar" min="0" max="100" value="0">
+                <div class="time-labels">
+                    <span id="currentTime">00:00</span>
+                    <span id="totalTime">00:00</span>
+                </div>
+            </div>
+            <div class="controls">
+                <button class="ctrl-btn btn-play" id="btnPlayPause" onclick="togglePlay()">▶ Play</button>
+                <button class="ctrl-btn btn-stop" id="btnStop" onclick="stopPlayer()">⏹ Stop</button>
+                <button class="ctrl-btn" id="btnNext"
+                    style="background: var(--card); color: var(--text); border: 2px solid var(--accent);"
+                    onclick="nextSong()">⏭ Next</button>
+                <button class="ctrl-btn btn-vocal" id="btnVocals" onclick="toggleVocals()">🎙 Vocals: ON</button>
+            </div>
+            <div class="volume-container">
+                <label id="volText">🔊 Vol:</label>
+                <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="50"
+                    oninput="setVolume(this.value)">
+                <span id="volLabel">50</span>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" id="tabBtnQueue" onclick="switchTab('queue')">Song Queue</button>
+            <button class="tab-btn" id="tabBtnYoutube" onclick="switchTab('youtube')">YouTube</button>
+            <button class="tab-btn" id="tabBtnLibrary" onclick="switchTab('library')">Local Library</button>
+        </div>
+
+        <!-- Queue Tab -->
+        <div class="tab-content active" id="tab-queue">
+            <div id="queueHeaderActions" style="display: none; justify-content: flex-end; margin-bottom: 10px;">
+                <button id="btnClearPlayed" onclick="clearPlayedSongs()" style="background: var(--accent2); color: white; border: none; border-radius: 6px; padding: 6px 14px; font-size: 0.85em; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">
+                    🗑️ Clear Played Songs
+                </button>
+            </div>
+            <table class="queue-table">
+                <thead>
+                    <tr>
+                        <th id="thTitle">Title</th>
+                        <th id="thStatus">Status</th>
+                        <th id="thProgress">Progress</th>
+                    </tr>
+                </thead>
+                <tbody id="queueBody">
+                    <tr>
+                        <td colspan="3" class="empty-msg" id="emptyQueueMsg">Queue is empty. Add songs from YouTube or Local Library.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- YouTube Tab -->
+        <div class="tab-content" id="tab-youtube">
+            <div class="player-card" style="margin-bottom: 12px;">
+                <div id="lblAddByUrl" style="font-size: 1em; font-weight: 600; color: var(--accent); margin-bottom: 10px;">🔗 Add by URL</div>
+                <input type="text" class="search-box" id="youtubeUrl" placeholder="Paste YouTube URL here..."
+                    style="margin-bottom: 8px;">
+                <button class="btn-add" id="btnAddUrl" style="width: 100%; padding: 10px; font-size: 1em;" onclick="addYoutubeUrl()">+
+                    Add to Queue</button>
+            </div>
+            <div class="player-card">
+                <div id="lblSearchYoutube" style="font-size: 1em; font-weight: 600; color: var(--accent); margin-bottom: 10px;">🔍 Search YouTube</div>
+                <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                    <input type="text" class="search-box" id="youtubeSearch" placeholder="Search for karaoke songs..."
+                        style="margin-bottom: 0; flex: 1;" onkeydown="if(event.key==='Enter')searchYoutube()">
+                    <button class="btn-add" id="btnSearchYt" style="padding: 10px 20px; font-size: 1em;"
+                        onclick="searchYoutube()">Search</button>
+                </div>
+                <div class="quality-selector-row" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; padding: 8px 12px; background: rgba(255,255,255,0.04); border-radius: 8px; border: 1px solid var(--border);">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 1.1em;">🎬</span>
+                        <label for="qualitySelect" id="lblVideoQuality" style="font-size: 0.9em; font-weight: 600; color: var(--text);">Default Video Quality:</label>
+                    </div>
+                    <select id="qualitySelect" onchange="onQualityChanged(this.value)" style="background: var(--card); color: var(--text); border: 1px solid var(--accent); border-radius: 6px; padding: 6px 12px; font-size: 0.9em; font-weight: 600; outline: none; cursor: pointer;">
+                        <option value="480p">480p</option>
+                        <option value="720p" selected>720p</option>
+                        <option value="1080p">1080p</option>
+                        <option value="1440p">1440p</option>
+                        <option value="4K">4K</option>
+                    </select>
+                </div>
+                <div id="youtubeResults">
+                    <div class="empty-msg" id="emptySearchInitial">Search for songs or paste a YouTube URL above.</div>
+                </div>
+                <div id="youtubeSearching"
+                    style="display: none; text-align: center; padding: 20px; color: var(--text-dim);">
+                    <div style="font-size: 1.5em; margin-bottom: 8px;">⏳</div>
+                    <span id="searchingText">Searching...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Library Tab -->
+        <div class="tab-content" id="tab-library">
+            <input type="text" class="search-box" id="librarySearch" placeholder="🔍 Search local library..."
+                oninput="filterLibrary()">
+            <div id="libraryList">
+                <div class="empty-msg">Loading...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Internationalization ---
+        let currentLang = localStorage.getItem('kapp_lang') || 'en';
+
+        const i18n = {
+            en: {
+                btnLang: "🌐 中文",
+                headerTitle: "🎤 Karaoke Remote",
+                connConnected: "Connected",
+                connDisconnected: "Disconnected",
+                noSongPlaying: "No song playing",
+                btnPlay: "▶ Play",
+                btnPause: "⏸ Pause",
+                btnStop: "⏹ Stop",
+                btnNext: "⏭ Next",
+                vocalsOn: "🎙 Vocals: ON",
+                vocalsOff: "🎙 Vocals: OFF",
+                volLabel: "🔊 Vol:",
+                tabQueue: "Song Queue",
+                tabYoutube: "YouTube",
+                tabLibrary: "Local Library",
+                btnClearPlayed: "🗑️ Clear Played Songs",
+                thTitle: "Title",
+                thStatus: "Status",
+                thProgress: "Progress",
+                emptyQueue: "Queue is empty. Add songs from YouTube or Local Library.",
+                lblAddByUrl: "🔗 Add by URL",
+                placeholderUrl: "Paste YouTube URL here...",
+                btnAddUrl: "+ Add to Queue",
+                lblSearchYoutube: "🔍 Search YouTube",
+                placeholderSearchYt: "Search for karaoke songs...",
+                btnSearch: "Search",
+                emptySearchInitial: "Search for songs or paste a YouTube URL above.",
+                searchingMsg: "Searching...",
+                searchFailed: "Search failed. Please try again.",
+                localMatchesHeader: (n) => `🗂️ LOCAL LIBRARY (${n} match${n !== 1 ? 'es' : ''} found - Instant Play)`,
+                ytMatchesHeader: (n) => `🎬 YOUTUBE RESULTS (${n})`,
+                noResultsFor: (q) => `No results found for "${q}".`,
+                placeholderSearchLib: "🔍 Search local library...",
+                emptyLibrary: "No songs found in local library.",
+                deleteConfirm: (t) => `Permanently delete "${t}" from local library?`,
+                btnAdd: "+ Add",
+                btnAddQueue: "+ Add to Queue",
+                btnDelete: "🗑️ Delete",
+                btnSingAgain: "🔄 Replay",
+                btnNextSong: "⬆️ Next",
+                badgePlaying: "▶ PLAYING",
+                badgePaused: "⏸ PAUSED",
+                statusPlaying: "▶ Playing",
+                statusPaused: "⏸ Paused",
+                statusWaiting: "Waiting",
+                statusDownloading: "Downloading",
+                statusRemovingVocals: "Removing Vocals",
+                statusReady: "Ready",
+                statusPlayed: "Played",
+                statusError: "Error",
+                songAddedToast: (t) => `Added to queue: "${t}"`,
+                lblVideoQuality: "Default Video Quality:"
+            },
+            zh: {
+                btnLang: "🌐 English",
+                headerTitle: "🎤 点歌台遥控器",
+                connConnected: "已连接",
+                connDisconnected: "未连接",
+                noSongPlaying: "当前暂无播放歌曲",
+                btnPlay: "▶ 播放",
+                btnPause: "⏸ 暂停",
+                btnStop: "⏹ 停止",
+                btnNext: "⏭ 下一首",
+                vocalsOn: "🎙 原唱: 开",
+                vocalsOff: "🎙 伴奏: 开 (消音)",
+                volLabel: "🔊 音量:",
+                tabQueue: "已点歌曲",
+                tabYoutube: "YouTube 搜索",
+                tabLibrary: "本地曲库",
+                btnClearPlayed: "🗑️ 清空已唱歌曲",
+                thTitle: "歌曲名称",
+                thStatus: "状态",
+                thProgress: "进度",
+                emptyQueue: "已点列表为空，快去添加歌曲吧！",
+                lblAddByUrl: "🔗 通过链接添加",
+                placeholderUrl: "粘贴 YouTube 视频链接...",
+                btnAddUrl: "+ 加入已点",
+                lblSearchYoutube: "🔍 搜索 YouTube",
+                placeholderSearchYt: "搜索歌名或歌手...",
+                btnSearch: "搜索",
+                emptySearchInitial: "在上方搜索歌曲或粘贴 YouTube 链接",
+                searchingMsg: "正在搜索...",
+                searchFailed: "搜索失败，请重试。",
+                localMatchesHeader: (n) => `🗂️ 本地曲库匹配 (${n} 首 - 即刻播放)`,
+                ytMatchesHeader: (n) => `🎬 YOUTUBE 搜索结果 (${n} 首)`,
+                noResultsFor: (q) => `未找到关于 "${q}" 的搜索结果。`,
+                placeholderSearchLib: "🔍 搜索本地曲库...",
+                emptyLibrary: "本地曲库暂无歌曲",
+                deleteConfirm: (t) => `确定要从本地曲库彻底删除 "${t}" 吗？`,
+                btnAdd: "+ 点歌",
+                btnAddQueue: "+ 加入已点",
+                btnDelete: "🗑️ 删除",
+                btnSingAgain: "🔄 重唱",
+                btnNextSong: "⬆️ 下一首",
+                badgePlaying: "▶ 播放中",
+                badgePaused: "⏸ 暂停中",
+                statusPlaying: "▶ 播放中",
+                statusPaused: "⏸ 暂停中",
+                statusWaiting: "等待中",
+                statusDownloading: "下载中",
+                statusRemovingVocals: "消除人声中",
+                statusReady: "已就绪",
+                statusPlayed: "已播放",
+                statusError: "错误",
+                songAddedToast: (t) => `已加入已点歌曲: "${t}"`,
+                lblVideoQuality: "默认视频画质:"
+            }
+        };
+
+        function t(key) {
+            const lang = i18n[currentLang] || i18n.en;
+            return lang[key] !== undefined ? lang[key] : (i18n.en[key] !== undefined ? i18n.en[key] : key);
+        }
+
+        function toggleLanguage() {
+            currentLang = (currentLang === 'en') ? 'zh' : 'en';
+            localStorage.setItem('kapp_lang', currentLang);
+            applyLanguage();
+            renderPlayer();
+            renderQueue();
+            if (libraryData.length > 0) renderLibrary();
+        }
+
+        function applyLanguage() {
+            const btnLang = document.getElementById("btnLang");
+            if (btnLang) btnLang.textContent = t("btnLang");
+            const headerTitle = document.getElementById("headerTitle");
+            if (headerTitle) headerTitle.textContent = t("headerTitle");
+            const volText = document.getElementById("volText");
+            if (volText) volText.textContent = t("volLabel");
+            const btnStop = document.getElementById("btnStop");
+            if (btnStop) btnStop.textContent = t("btnStop");
+            const btnNext = document.getElementById("btnNext");
+            if (btnNext) btnNext.textContent = t("btnNext");
+            const tabBtnQueue = document.getElementById("tabBtnQueue");
+            if (tabBtnQueue) tabBtnQueue.textContent = t("tabQueue");
+            const tabBtnYoutube = document.getElementById("tabBtnYoutube");
+            if (tabBtnYoutube) tabBtnYoutube.textContent = t("tabYoutube");
+            const tabBtnLibrary = document.getElementById("tabBtnLibrary");
+            if (tabBtnLibrary) tabBtnLibrary.textContent = t("tabLibrary");
+            const btnClearPlayed = document.getElementById("btnClearPlayed");
+            if (btnClearPlayed) btnClearPlayed.innerHTML = t("btnClearPlayed");
+            const thTitle = document.getElementById("thTitle");
+            if (thTitle) thTitle.textContent = t("thTitle");
+            const thStatus = document.getElementById("thStatus");
+            if (thStatus) thStatus.textContent = t("thStatus");
+            const thProgress = document.getElementById("thProgress");
+            if (thProgress) thProgress.textContent = t("thProgress");
+            const lblAddByUrl = document.getElementById("lblAddByUrl");
+            if (lblAddByUrl) lblAddByUrl.textContent = t("lblAddByUrl");
+            const youtubeUrl = document.getElementById("youtubeUrl");
+            if (youtubeUrl) youtubeUrl.placeholder = t("placeholderUrl");
+            const btnAddUrl = document.getElementById("btnAddUrl");
+            if (btnAddUrl) btnAddUrl.textContent = t("btnAddUrl");
+            const lblSearchYoutube = document.getElementById("lblSearchYoutube");
+            if (lblSearchYoutube) lblSearchYoutube.textContent = t("lblSearchYoutube");
+            const lblVideoQuality = document.getElementById("lblVideoQuality");
+            if (lblVideoQuality) lblVideoQuality.textContent = t("lblVideoQuality");
+            const youtubeSearch = document.getElementById("youtubeSearch");
+            if (youtubeSearch) youtubeSearch.placeholder = t("placeholderSearchYt");
+            const btnSearchYt = document.getElementById("btnSearchYt");
+            if (btnSearchYt) btnSearchYt.textContent = t("btnSearch");
+            const emptySearchInitial = document.getElementById("emptySearchInitial");
+            if (emptySearchInitial) emptySearchInitial.textContent = t("emptySearchInitial");
+            const searchingText = document.getElementById("searchingText");
+            if (searchingText) searchingText.textContent = t("searchingMsg");
+            const librarySearch = document.getElementById("librarySearch");
+            if (librarySearch) librarySearch.placeholder = t("placeholderSearchLib");
+            const connStatus = document.getElementById("connStatus");
+            if (connStatus) {
+                if (connStatus.classList.contains("connected")) {
+                    connStatus.textContent = t("connConnected");
+                } else {
+                    connStatus.textContent = t("connDisconnected");
+                }
+            }
+        }
+
+        let toastTimeout = null;
+        function showToast(msg, icon = "✅") {
+            const toast = document.getElementById("toastNotification");
+            if (!toast) return;
+            toast.innerHTML = `<span class="toast-icon">${icon}</span><span>${escapeHtml(msg)}</span>`;
+            toast.classList.add("show");
+            if (toastTimeout) clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove("show");
+            }, 2500);
+        }
+
+        let queueData = [];
+        let libraryData = [];
+        let playerState = { playing: false, position: 0, duration: 0, volume: 50, vocals_on: true, current_title: "" };
+        let seekDragging = false;
+        let eventSource = null;
+        let qualityDropdownFocused = false;
+
+        // --- Settings / Quality ---
+        async function fetchInitialQuality() {
+            try {
+                const res = await fetch("/api/settings/quality");
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.quality) {
+                        const sel = document.getElementById("qualitySelect");
+                        if (sel) sel.value = data.quality;
+                    }
+                }
+            } catch (e) { }
+        }
+
+        async function onQualityChanged(val) {
+            try {
+                await fetch("/api/settings/quality", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ quality: val })
+                });
+                showToast(`Quality set to ${val}`, "🎬");
+            } catch (e) { }
+        }
+
+        // --- SSE Connection ---
+        function connectSSE() {
+            if (eventSource) eventSource.close();
+            eventSource = new EventSource("/api/events");
+            const status = document.getElementById("connStatus");
+
+            eventSource.onopen = () => {
+                status.textContent = t("connConnected");
+                status.className = "connection-status connected";
+            };
+            eventSource.onerror = () => {
+                status.textContent = t("connDisconnected");
+                status.className = "connection-status disconnected";
+                setTimeout(connectSSE, 3000);
+            };
+            eventSource.onmessage = (e) => {
+                try {
+                    const msg = JSON.parse(e.data);
+                    if (msg.type === "queue") {
+                        queueData = msg.data;
+                        renderQueue();
+                    } else if (msg.type === "player") {
+                        playerState = msg.data;
+                        renderPlayer();
+                        renderQueue();
+                    } else if (msg.type === "library") {
+                        libraryData = msg.data;
+                        renderLibrary();
+                    } else if (msg.type === "settings" && msg.data && msg.data.quality) {
+                        const sel = document.getElementById("qualitySelect");
+                        if (sel && !qualityDropdownFocused) sel.value = msg.data.quality;
+                    }
+                } catch (err) { }
+            };
+        }
+
+        function translateStatus(status) {
+            if (!status) return "";
+            if (status === "Waiting" || status === "等待中") return t("statusWaiting");
+            if (status.startsWith("Downloading") || status.startsWith("下载中")) return t("statusDownloading") + status.substring(11);
+            if (status.startsWith("Removing Vocals") || status.startsWith("人声消除中")) return t("statusRemovingVocals") + status.substring(15);
+            if (status === "Ready" || status === "已就绪") return t("statusReady");
+            if (status === "Playing" || status === "▶ Playing" || status === "▶ 正在播放") return t("statusPlaying");
+            if (status === "Paused" || status === "⏸ Paused" || status === "⏸ 暂停中") return t("statusPaused");
+            if (status === "Played" || status === "已唱过") return t("statusPlayed");
+            if (status.startsWith("Error") || status.startsWith("失败")) return t("statusError") + status.substring(5);
+            return status;
+        }
+
+        // --- Rendering ---
+        function renderQueue() {
+            const tbody = document.getElementById("queueBody");
+            if (!queueData || !queueData.length) {
+                tbody.innerHTML = `<tr><td colspan="3" class="empty-msg">${t("emptyQueue")}</td></tr>`;
+                const clearHeader = document.getElementById("queueHeaderActions");
+                if (clearHeader) clearHeader.style.display = "none";
+                return;
+            }
+
+            // Show Clear Played Songs button when at least 1 played song exists
+            const playedCount = queueData.filter(item => !!item.played || item.status === "Played" || item.status === "已唱过").length;
+            const clearHeader = document.getElementById("queueHeaderActions");
+            if (clearHeader) {
+                clearHeader.style.display = (playedCount >= 1) ? "flex" : "none";
+            }
+
+            let activePlayingRow = -1;
+            if (playerState.current_row !== undefined && playerState.current_row >= 0 && playerState.current_row < queueData.length) {
+                activePlayingRow = playerState.current_row;
+            } else {
+                activePlayingRow = queueData.findIndex(item => item.is_current || item.status === "Playing" || item.status === "▶ Playing" || item.status === "▶ 正在播放");
+            }
+
+            tbody.innerHTML = queueData.map((item, i) => {
+                const isCurrent = (i === activePlayingRow) && (item.status === "Playing" || item.status === "▶ Playing" || item.status === "▶ 正在播放" || !!item.is_current || playerState.playing || (playerState.current_title && playerState.current_title === item.title));
+                const isPlaying = isCurrent && playerState.playing;
+                const isPaused = isCurrent && !playerState.playing;
+                const isCurrentActive = isPlaying || isPaused;
+                const isPlayed = !isCurrentActive && (!!item.played || item.status === "Played" || item.status === "已唱过");
+
+                let statusClass = "status-pending";
+                let statusText = item.status;
+
+                if (isCurrentActive) {
+                    if (isPlaying) {
+                        statusText = t("statusPlaying");
+                        statusClass = "status-playing";
+                    } else {
+                        statusText = t("statusPaused");
+                        statusClass = "status-paused";
+                    }
+                } else if (item.status === "Ready" || item.status === "已就绪") {
+                    statusClass = isPlayed ? "status-dim" : "status-ready";
+                    statusText = t("statusReady");
+                } else if (isPlayed) {
+                    statusClass = "status-dim";
+                    statusText = t("statusPlayed");
+                } else {
+                    statusText = translateStatus(item.status);
+                    if (item.status && (item.status.startsWith("Error") || item.status.startsWith("失败"))) {
+                        statusClass = "status-error";
+                    }
+                }
+
+                let currentBadge = '';
+                if (isCurrentActive) {
+                    currentBadge = isPlaying
+                        ? `<span class="badge-now-playing">${t("badgePlaying")}</span>`
+                        : `<span class="badge-now-playing paused">${t("badgePaused")}</span>`;
+                }
+
+                let replayBtn = '';
+                if (isPlayed) {
+                    replayBtn = `<button class="btn-action-replay" onclick="event.stopPropagation(); replaySong(${i})">${t("btnSingAgain")}</button>`;
+                }
+                let playNextBtn = '';
+                if (!isCurrentActive && !isPlayed) {
+                    playNextBtn = `<button style="margin-left: 8px; padding: 3px 8px; background: var(--accent); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.82em;" onclick="event.stopPropagation(); moveNext(${i})">${t("btnNextSong")}</button>`;
+                }
+                let deleteBtn = `<button style="margin-left: 8px; padding: 3px 8px; background: var(--accent2); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.82em;" onclick="event.stopPropagation(); deleteSong(${i})">${t("btnDelete")}</button>`;
+
+                const rowClass = isCurrentActive ? 'playing' : (isPlayed ? 'played' : '');
+                const progressVal = item.progress || (item.status === 'Ready' || item.status === '已就绪' || item.status === 'Playing' || item.status === 'Played' ? 100 : 0);
+
+                return `<tr onclick="playSong(${i})" class="${rowClass}">
+                    <td>${currentBadge}${escapeHtml(item.title)}${replayBtn}${playNextBtn}${deleteBtn}</td>
+                    <td class="${statusClass}">${escapeHtml(statusText)}</td>
+                    <td><div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${progressVal}%"></div></div></td>
+                </tr>`;
+            }).join("");
+        }
+
+        function renderPlayer() {
+            document.getElementById("nowPlaying").textContent = playerState.current_title || t("noSongPlaying");
+            document.getElementById("btnPlayPause").textContent = playerState.playing ? t("btnPause") : t("btnPlay");
+
+            const btnV = document.getElementById("btnVocals");
+            if (playerState.vocals_on) {
+                btnV.textContent = t("vocalsOn");
+                btnV.classList.remove("off");
+            } else {
+                btnV.textContent = t("vocalsOff");
+                btnV.classList.add("off");
+            }
+
+            if (!seekDragging) {
+                document.getElementById("seekBar").max = playerState.duration || 1;
+                document.getElementById("seekBar").value = playerState.position || 0;
+            }
+            document.getElementById("currentTime").textContent = formatTime(playerState.position);
+            document.getElementById("totalTime").textContent = formatTime(playerState.duration);
+
+            document.getElementById("volumeSlider").value = playerState.volume !== undefined ? playerState.volume : 50;
+            document.getElementById("volLabel").textContent = playerState.volume !== undefined ? playerState.volume : 50;
+        }
+
+        function formatTime(ms) {
+            const totalSec = Math.floor((ms || 0) / 1000);
+            const m = Math.floor(totalSec / 60);
+            const s = totalSec % 60;
+            return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+
+        function escapeHtml(str) {
+            const d = document.createElement("div");
+            d.textContent = str || "";
+            return d.innerHTML;
+        }
+
+        // --- API calls ---
+        async function api(endpoint, data) {
+            try {
+                const res = await fetch(endpoint, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json; charset=utf-8" },
+                    body: data ? JSON.stringify(data) : JSON.stringify({})
+                });
+                return res;
+            } catch (e) {
+                console.error("API error", e);
+            }
+        }
+
+        function playSong(row) { api(`/api/player/play/${row}`); }
+        function replaySong(row) { api(`/api/queue/replay/${row}`); }
+        function togglePlay() { api("/api/player/toggle_play"); }
+        function stopPlayer() { api("/api/player/stop"); }
+        function nextSong() { api("/api/player/next"); }
+        function moveNext(row) { api(`/api/queue/move_next/${row}`); }
+        function deleteSong(row) { api(`/api/queue/delete/${row}`); }
+        function clearPlayedSongs() {
+            api("/api/queue/clear_played");
+            showToast(t("btnClearPlayed"), "🧹");
+        }
+        function toggleVocals() { api("/api/player/toggle_vocals"); }
+
+        function setVolume(val) {
+            document.getElementById("volLabel").textContent = val;
+            api("/api/player/volume", { volume: parseInt(val) });
+        }
+
+        // Seek bar interaction
+        const seekBar = document.getElementById("seekBar");
+        seekBar.addEventListener("mousedown", () => seekDragging = true);
+        seekBar.addEventListener("touchstart", () => seekDragging = true);
+        seekBar.addEventListener("mouseup", () => { seekDragging = false; api("/api/player/seek", { position: parseInt(seekBar.value) }); });
+        seekBar.addEventListener("touchend", () => { seekDragging = false; api("/api/player/seek", { position: parseInt(seekBar.value) }); });
+
+        // --- Tabs ---
+        function switchTab(name) {
+            const tabNames = ['queue', 'youtube', 'library'];
+            document.querySelectorAll(".tab-btn").forEach((b, i) => b.classList.toggle("active", tabNames[i] === name));
+            tabNames.forEach(tName => {
+                const el = document.getElementById("tab-" + tName);
+                if (el) el.classList.toggle("active", tName === name);
+            });
+            if (name === "library") {
+                loadLibrary();
+            }
+        }
+
+        // --- Library ---
+        let currentFilteredLibrary = [];
+
+        async function loadLibrary() {
+            try {
+                const res = await fetch("/api/library");
+                if (res.ok) {
+                    libraryData = await res.json();
+                    renderLibrary();
+                }
+            } catch (e) { }
+        }
+
+        function renderLibrary() {
+            const container = document.getElementById("libraryList");
+            const search = (document.getElementById("librarySearch").value || "").toLowerCase();
+            currentFilteredLibrary = libraryData.filter(s => s.title.toLowerCase().includes(search));
+            if (!currentFilteredLibrary.length) {
+                container.innerHTML = `<div class="empty-msg">${t("emptyLibrary")}</div>`;
+                return;
+            }
+            container.innerHTML = currentFilteredLibrary.map((s, i) => {
+                const dur = s.duration ? ` <span style="color:var(--text-dim); font-size:0.85em;">[${Math.floor(s.duration / 60)}:${String(s.duration % 60).padStart(2, '0')}]</span>` : '';
+                const qualityBadge = s.quality ? ` <span style="font-size:0.75em; padding: 2px 6px; background: rgba(108,99,255,0.25); color: var(--accent); border: 1px solid var(--accent); border-radius: 4px; font-weight: 700; margin-left: 4px;">${escapeHtml(s.quality)}</span>` : '';
+                return `<div class="library-item" style="display: flex; align-items: center;">
+                    <div class="song-thumb song-thumb-local">🎵</div>
+                    <div style="flex: 1; min-width: 0; margin-right: 12px;">
+                        <span class="title" style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(s.title)}</span>
+                        <div style="margin-top: 2px;">${qualityBadge}${dur}</div>
+                    </div>
+                    <div style="display: flex; gap: 8px; flex-shrink: 0;">
+                        <button class="btn-add" onclick="addLocalIndex(${i}, this)">${t("btnAdd")}</button>
+                        <button class="btn-delete" onclick="deleteLocalIndex(${i})">${t("btnDelete")}</button>
+                    </div>
+                </div>`;
+            }).join("");
+        }
+
+        function filterLibrary() { renderLibrary(); }
+
+        function addLocalIndex(i, btn) {
+            const song = currentFilteredLibrary[i];
+            if (song) addLocal(song, btn);
+        }
+
+        function addLocal(song, btn) {
+            api("/api/queue/add_local", song);
+            showToast(t("songAddedToast")(song.title || "Local Song"), "🗂️");
+            if (btn) {
+                const orig = btn.innerHTML;
+                btn.innerHTML = "✓";
+                btn.style.pointerEvents = "none";
+                setTimeout(() => {
+                    btn.innerHTML = orig;
+                    btn.style.pointerEvents = "";
+                }, 1000);
+            }
+        }
+
+        async function deleteLocalIndex(i) {
+            const song = currentFilteredLibrary[i];
+            if (!song) return;
+            if (!confirm(t("deleteConfirm")(song.title))) {
+                return;
+            }
+            try {
+                const res = await fetch("/api/library/delete", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(song)
+                });
+                const result = await res.json();
+                if (result.ok) {
+                    await loadLibrary();
+                } else {
+                    alert("Failed to delete song: " + (result.error || "Unknown error"));
+                }
+            } catch (err) {
+                alert("Failed to delete song: " + err);
+            }
+        }
+
+        // --- YouTube ---
+        async function addYoutubeUrl() {
+            const urlInput = document.getElementById("youtubeUrl");
+            const url = urlInput.value.trim();
+            if (!url) return;
+
+            const selQuality = document.getElementById("qualitySelect");
+            const quality = selQuality ? selQuality.value : "720p";
+
+            urlInput.disabled = true;
+            try {
+                const res = await fetch("/api/youtube/info", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ url })
+                });
+                const data = await res.json();
+                if (data.error) {
+                    alert("Error: " + data.error);
+                    return;
+                }
+                api("/api/queue/add_youtube", { url: data.url, title: data.title, quality });
+                showToast(t("songAddedToast")(data.title), "🎬");
+                urlInput.value = "";
+            } catch (e) {
+                alert("Failed to fetch video info");
+            } finally {
+                urlInput.disabled = false;
+            }
+        }
+
+        async function searchYoutube() {
+            const query = document.getElementById("youtubeSearch").value.trim();
+            if (!query) return;
+
+            const resultsDiv = document.getElementById("youtubeResults");
+            const searchingDiv = document.getElementById("youtubeSearching");
+            resultsDiv.style.display = "none";
+            searchingDiv.style.display = "block";
+
+            try {
+                const res = await fetch("/api/youtube/search", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ query })
+                });
+                const videos = await res.json();
+                searchingDiv.style.display = "none";
+                resultsDiv.style.display = "block";
+
+                const localItems = videos.filter(v => v.source === 'local');
+                const ytItems    = videos.filter(v => v.source === 'youtube');
+
+                let html = '';
+
+                // --- Local Library Section ---
+                if (localItems.length) {
+                    html += `<div style="padding: 6px 0 4px; font-size:0.8em; font-weight:700; color:var(--success); letter-spacing:1px; border-bottom:1px solid rgba(0,200,83,0.25); margin-bottom:6px;">
+                        ${t("localMatchesHeader")(localItems.length)}
+                    </div>`;
+                    html += localItems.map(v =>
+                        `<div class="library-item" style="border-color:rgba(0,200,83,0.35); display: flex; align-items: center;">
+                            <div class="song-thumb song-thumb-local">🎵</div>
+                            <div style="flex: 1; min-width: 0; margin-right: 12px;">
+                                <span class="title" style="color:var(--success); display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(v.title)}</span>
+                                <span style="font-size: 0.75em; color: var(--text-dim);">[${t("tabLocal") || "Local"}]</span>
+                            </div>
+                            <button class="btn-add" style="background:var(--success); color:#000;"
+                                onclick='addLocalSong(${JSON.stringify(v).replace(/'/g, "&#39;")}, this)'>${t("btnAdd")}</button>
+                        </div>`
+                    ).join('');
+                }
+
+                // --- YouTube Section ---
+                if (ytItems.length) {
+                    html += `<div style="padding: 6px 0 4px; font-size:0.8em; font-weight:700; color:var(--accent); letter-spacing:1px; border-bottom:1px solid rgba(108,99,255,0.25); margin-bottom:6px; margin-top:${localItems.length ? '12px' : '0'};">
+                        ${t("ytMatchesHeader")(ytItems.length)}
+                    </div>`;
+                    html += ytItems.map(v => {
+                        const dur = v.duration ? ` [${Math.floor(v.duration / 60)}:${String(v.duration % 60).padStart(2, '0')}]` : '';
+                        const thumbHtml = v.thumbnail
+                            ? `<img src="${escapeHtml(v.thumbnail)}" class="song-thumb" alt="" loading="lazy" onerror="this.outerHTML='<div class=\\'song-thumb song-thumb-yt\\'>🎬</div>'">`
+                            : `<div class="song-thumb song-thumb-yt">🎬</div>`;
+                        return `<div class="library-item" style="display: flex; align-items: center;">
+                            ${thumbHtml}
+                            <div style="flex: 1; min-width: 0; margin-right: 12px;">
+                                <span class="title" style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(v.title)}</span>
+                                <span style="font-size: 0.75em; color: var(--text-dim);">${dur}</span>
+                            </div>
+                            <button class="btn-add" onclick='addYoutubeSong(${JSON.stringify(v.url).replace(/'/g, "&#39;")}, ${JSON.stringify(v.title).replace(/'/g, "&#39;")}, this)'>${t("btnAdd")}</button>
+                        </div>`;
+                    }).join('');
+                }
+
+                if (!html) {
+                    html = `<div class="empty-msg">${t("noResultsFor")(query)}</div>`;
+                }
+
+                resultsDiv.innerHTML = html;
+            } catch (e) {
+                searchingDiv.style.display = "none";
+                resultsDiv.style.display = "block";
+                resultsDiv.innerHTML = `<div class="empty-msg">${t("searchFailed")}</div>`;
+            }
+        }
+
+        function addLocalSong(song, btn) {
+            api("/api/queue/add_local", song);
+            showToast(t("songAddedToast")(song.title || "Local Song"), "🗂️");
+            if (btn) {
+                const orig = btn.innerHTML;
+                btn.innerHTML = "✓";
+                btn.style.pointerEvents = "none";
+                setTimeout(() => {
+                    btn.innerHTML = orig;
+                    btn.style.pointerEvents = "";
+                }, 1000);
+            }
+        }
+
+        function addYoutubeSong(url, title, btn) {
+            const selQuality = document.getElementById("qualitySelect");
+            const quality = selQuality ? selQuality.value : "720p";
+            api("/api/queue/add_youtube", { url, title, quality });
+            showToast(t("songAddedToast")(title), "🎬");
+            if (btn) {
+                const orig = btn.innerHTML;
+                btn.innerHTML = "✓";
+                btn.style.pointerEvents = "none";
+                setTimeout(() => {
+                    btn.innerHTML = orig;
+                    btn.style.pointerEvents = "";
+                }, 1000);
+            }
+        }
+
+        // Track quality select dropdown focus so updates don't interrupt user interaction
+        const qSel = document.getElementById("qualitySelect");
+        if (qSel) {
+            qSel.addEventListener("focus", () => qualityDropdownFocused = true);
+            qSel.addEventListener("blur", () => qualityDropdownFocused = false);
+        }
+
+        // --- Init ---
+        applyLanguage();
+        fetchInitialQuality();
+        connectSSE();
+        loadLibrary();
+    </script>
+</body>
+
+</html>

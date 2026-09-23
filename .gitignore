@@ -1,0 +1,48 @@
+# Python virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Large binaries and executables (exceeds GitHub limit & should not be in git)
+**/*.exe
+**/*.apk
+**/*.jar
+ffmpeg.exe
+ffprobe.exe
+deno.exe
+
+# Build and package artifacts
+dist/
+build/
+**/build/
+**/.gradle/
+**/jdk-*/
+*.dist/
+*.build/
+*.spec
+installer/Output/
+
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# User downloaded songs and personal media
+downloads/
+*.mp4
+*.wav
+*.mkv
+*.webm
+
+# Personal settings and local state
+settings.json
+*.log
+
+# IDE and OS metadata
+.vscode/
+.idea/
+**/local.properties
+Thumbs.db
+.DS_Store

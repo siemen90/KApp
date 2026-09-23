@@ -1,0 +1,64 @@
+<resources>
+    <string name="app_name">KApp 卡拉OK</string>
+    <string name="tab_player">播放器</string>
+    <string name="tab_queue">点歌列表</string>
+    <string name="tab_search">搜索点歌</string>
+    <string name="tab_library">本地曲库</string>
+    <string name="tab_settings">设置</string>
+
+    <string name="vocals_on">🎙 原唱: 开启</string>
+    <string name="vocals_off">🎙 伴唱: 开启 (消音)</string>
+    <string name="play">播放</string>
+    <string name="pause">暂停</string>
+    <string name="stop">停止</string>
+    <string name="next">下一首</string>
+    <string name="replay">重唱</string>
+
+    <string name="search_placeholder">搜索歌曲或卡拉OK伴奏...</string>
+    <string name="search_local_placeholder">筛选本地歌曲...</string>
+    <string name="channel_placeholder">输入频道ID或@频道名...</string>
+    <string name="btn_search">搜索</string>
+    <string name="btn_fetch_channel">获取频道视频</string>
+    <string name="btn_add_to_queue">加入点歌单</string>
+    <string name="btn_delete">删除</string>
+    <string name="btn_move_to_next">插播到下一首</string>
+    <string name="btn_move_up">上移</string>
+    <string name="btn_move_down">下移</string>
+    <string name="btn_refresh">刷新曲库</string>
+
+    <string name="header_local_results">── 本地曲库匹配 ──</string>
+    <string name="header_youtube_results">── YouTube 搜索结果 ──</string>
+
+    <string name="status_waiting">等待中</string>
+    <string name="status_downloading">下载中…</string>
+    <string name="status_removing_vocals">人声消除中…</string>
+    <string name="status_ready">已就绪</string>
+    <string name="status_playing">正在播放</string>
+    <string name="status_played">已唱过</string>
+    <string name="status_error">失败</string>
+
+    <string name="remote_server_title">手机点歌控制台</string>
+    <string name="remote_scan_hint">微信/浏览器扫码或访问：</string>
+    <string name="delete_confirm_title">删除歌曲</string>
+    <string name="delete_confirm_msg">确定永久删除此歌曲及所有下载文件吗？</string>
+    <string name="confirm">确认删除</string>
+    <string name="cancel">取消</string>
+
+    <string name="settings_language">界面语言</string>
+    <string name="language_chinese">简体中文 (Chinese)</string>
+    <string name="language_english">English (英文)</string>
+    <string name="language_hint">切换应用的所有文字为中文或英文</string>
+    <string name="hide_controls">隐藏控制栏</string>
+    <string name="show_controls">显示控制栏</string>
+    <string name="btn_mark_unplayed">转为未唱</string>
+    <string name="action_sing_again">再唱一次</string>
+    <string name="settings_download_dir">下载保存路径</string>
+    <string name="settings_server_port">点歌服务端口</string>
+    <string name="empty_queue">点歌单为空，快去搜索点歌吧！</string>
+    <string name="empty_library">本地暂无已下载歌曲。</string>
+    <string name="btn_clear_played">清空已唱</string>
+    <string name="btn_remote_qr">扫码点歌</string>
+    <string name="storage_free">剩余空间 : %s</string>
+    <string name="settings_video_quality">默认视频清晰度</string>
+    <string name="settings_video_quality_hint">YouTube 下载视频画质（如 720p、1080p、4K）。若所选画质不存在，则自动下载最高画质。</string>
+</resources>

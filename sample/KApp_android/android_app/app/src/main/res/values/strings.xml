@@ -1,0 +1,64 @@
+<resources>
+    <string name="app_name">KApp Karaoke</string>
+    <string name="tab_player">Player</string>
+    <string name="tab_queue">Queue</string>
+    <string name="tab_search">Search</string>
+    <string name="tab_library">Library</string>
+    <string name="tab_settings">Settings</string>
+
+    <string name="vocals_on">🎙 Vocals: ON</string>
+    <string name="vocals_off">🎙 Vocals: OFF (Karaoke)</string>
+    <string name="play">Play</string>
+    <string name="pause">Pause</string>
+    <string name="stop">Stop</string>
+    <string name="next">Next</string>
+    <string name="replay">Replay</string>
+
+    <string name="search_placeholder">Search for songs or karaoke...</string>
+    <string name="search_local_placeholder">Filter local songs...</string>
+    <string name="channel_placeholder">Channel ID or @handle...</string>
+    <string name="btn_search">Search</string>
+    <string name="btn_fetch_channel">Fetch Channel</string>
+    <string name="btn_add_to_queue">Add to Queue</string>
+    <string name="btn_delete">Delete</string>
+    <string name="btn_move_to_next">Move to Next</string>
+    <string name="btn_move_up">Move Up</string>
+    <string name="btn_move_down">Move Down</string>
+    <string name="btn_refresh">Refresh</string>
+
+    <string name="header_local_results">── Local Library Matches ──</string>
+    <string name="header_youtube_results">── YouTube Results ──</string>
+
+    <string name="status_waiting">Waiting</string>
+    <string name="status_downloading">Downloading…</string>
+    <string name="status_removing_vocals">Removing Vocals…</string>
+    <string name="status_ready">Ready</string>
+    <string name="status_playing">Now Playing</string>
+    <string name="status_played">Played</string>
+    <string name="status_error">Error</string>
+
+    <string name="remote_server_title">Remote Web Control</string>
+    <string name="remote_scan_hint">Scan QR code or visit:</string>
+    <string name="delete_confirm_title">Delete Song</string>
+    <string name="delete_confirm_msg">Permanently delete this song and all downloaded files?</string>
+    <string name="confirm">Yes, Delete</string>
+    <string name="cancel">Cancel</string>
+
+    <string name="settings_language">Language</string>
+    <string name="language_chinese">简体中文 (Chinese)</string>
+    <string name="language_english">English</string>
+    <string name="language_hint">Switch all text in the app to Chinese or English</string>
+    <string name="hide_controls">Hide Controls</string>
+    <string name="show_controls">Show Controls</string>
+    <string name="btn_mark_unplayed">Convert to Unplayed</string>
+    <string name="action_sing_again">Sing Again</string>
+    <string name="settings_download_dir">Download Location</string>
+    <string name="settings_server_port">Remote Server Port</string>
+    <string name="empty_queue">Song queue is empty. Search and add songs!</string>
+    <string name="empty_library">No songs in local library yet.</string>
+    <string name="btn_clear_played">Clear Played</string>
+    <string name="btn_remote_qr">Remote QR</string>
+    <string name="storage_free">Storage Free : %s</string>
+    <string name="settings_video_quality">Default Video Quality</string>
+    <string name="settings_video_quality_hint">YouTube download resolution (e.g. 720p, 1080p, 4K). If unavailable, highest resolution is downloaded.</string>
+</resources>
