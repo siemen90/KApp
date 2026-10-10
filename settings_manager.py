@@ -10,12 +10,13 @@ QUALITY_OPTIONS = ["480p", "720p", "1080p", "2K", "4K"]
 DEFAULT_QUALITY = "720p"
 DEFAULT_LANGUAGE = "en"
 DEFAULT_DOWNLOAD_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "downloads")
+DEFAULT_WEB_PORT = 8080
 
-# Version format: vYYYYMMDD-HHMM (24-hour format)
-APP_VERSION = "v20260921-0132"
+# Version format: YYYYMMDDHHMM (24-hour format)
+APP_VERSION = "202610110508"
 
 def get_app_version() -> str:
-    """Returns application version formatted as vYYYYMMDD-HHMM based on latest code changes."""
+    """Returns application version formatted as YYYYMMDDHHMM (24-hour format)."""
     try:
         app_dir = os.path.dirname(os.path.abspath(__file__))
         py_files = [
@@ -26,7 +27,7 @@ def get_app_version() -> str:
         if py_files:
             latest_mtime = max(os.path.getmtime(p) for p in py_files)
             dt = datetime.datetime.fromtimestamp(latest_mtime)
-            dynamic_ver = "v" + dt.strftime("%Y%m%d-%H%M")
+            dynamic_ver = dt.strftime("%Y%m%d%H%M")
             return max(dynamic_ver, APP_VERSION)
     except Exception:
         pass
@@ -46,6 +47,7 @@ class SettingsManager:
             "language": DEFAULT_LANGUAGE,
             "video_quality": DEFAULT_QUALITY,
             "download_dir": DEFAULT_DOWNLOAD_DIR,
+            "web_port": DEFAULT_WEB_PORT,
         }
         if os.path.exists(SETTINGS_FILE):
             try:
@@ -106,6 +108,21 @@ class SettingsManager:
                 self.save()
             except Exception as e:
                 print(f"Failed to create download dir {abs_path}: {e}")
+
+    def get_web_port(self) -> int:
+        try:
+            return int(self.settings.get("web_port", DEFAULT_WEB_PORT))
+        except (ValueError, TypeError):
+            return DEFAULT_WEB_PORT
+
+    def set_web_port(self, port: int):
+        try:
+            port = int(port)
+            if 1024 <= port <= 65535:
+                self.settings["web_port"] = port
+                self.save()
+        except (ValueError, TypeError):
+            pass
 
     @staticmethod
     def get_max_height(quality: str) -> int:

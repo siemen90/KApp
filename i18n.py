@@ -76,6 +76,8 @@ STRINGS = {
         "download_dir": "Download Directory",
         "btn_browse": "Browse...",
         "storage_free": "Storage Free",
+        "web_port": "Web Remote Port",
+        "web_port_hint": "Port for phone remote control (Default: 8080, restart app to apply)",
         "tools_title": "Dependencies & External Tools",
         "ffmpeg_tool_title": "FFmpeg & FFprobe (Media Engine)",
         "deno_tool_title": "Deno (YouTube JS Engine)",
@@ -94,6 +96,21 @@ STRINGS = {
         "btn_cancel": "Cancel",
         "saved_notice": "Settings saved successfully.",
         "restart_notice": "Settings saved. Language change applied.",
+
+        # App Update
+        "update_available_title": "🎉 Update Available",
+        "update_available_header": "A new version of KApp is available!",
+        "current_version_label": "Current Version",
+        "latest_version_label": "Latest Version",
+        "release_notes": "What's New in this Release:",
+        "btn_update_now": "⬇️ Update Now",
+        "btn_later": "Later",
+        "btn_check_app_update": "🔍 Check for Updates",
+        "btn_open_logs": "📁 Open Logs",
+        "app_up_to_date_title": "Up to Date",
+        "app_up_to_date_msg": "You are already using the latest version of KApp ({ver}).",
+        "update_check_failed_title": "Update Check Notice",
+        "update_check_failed_msg": "Could not check for updates.\n\nNote: If the GitHub repository is private, releases are not publicly accessible until the repository is made public.",
     },
     "zh": {
         # Main Window
@@ -170,6 +187,8 @@ STRINGS = {
         "download_dir": "下载保存路径",
         "btn_browse": "浏览...",
         "storage_free": "剩余空间",
+        "web_port": "手机点歌网页端口",
+        "web_port_hint": "手机扫码点歌服务端口（默认: 8080，修改后重启应用生效）",
         "tools_title": "运行依赖与外部组件",
         "ffmpeg_tool_title": "FFmpeg 与 FFprobe（音视频处理引擎）",
         "deno_tool_title": "Deno（YouTube 解密 JS 引擎）",
@@ -188,6 +207,21 @@ STRINGS = {
         "btn_cancel": "取消",
         "saved_notice": "设置已成功保存。",
         "restart_notice": "设置已保存，界面语言已更新。",
+
+        # 软件更新
+        "update_available_title": "🎉 发现新版本",
+        "update_available_header": "KApp 发布了新版本！",
+        "current_version_label": "当前版本",
+        "latest_version_label": "最新版本",
+        "release_notes": "更新内容与改进：",
+        "btn_update_now": "⬇️ 立即更新",
+        "btn_later": "稍后提醒",
+        "btn_check_app_update": "🔍 检查软件更新",
+        "btn_open_logs": "📁 查看日志",
+        "app_up_to_date_title": "已是最新版本",
+        "app_up_to_date_msg": "当前已是最新版本的 KApp ({ver})，无需更新。",
+        "update_check_failed_title": "检查更新提示",
+        "update_check_failed_msg": "暂时无法获取更新信息。\n\n提示：若该 GitHub 仓库为私有(Private)，公开用户将无法直接访问 Release，请将仓库设为 Public 公开或确认网络连接。",
     }
 }
 

@@ -1,9 +1,9 @@
 ; Karaoke 软件安装包配置脚本
 
 #define MyAppName "Karaoke Player"
-#define MyAppVersion "1.0"
+#define MyAppVersion "202610110508"
 #define MyAppPublisher "KaraokeApp"
-#define MyAppExeName "karaoke_app.exe"
+#define MyAppExeName "Karaoke_App.exe"
 
 [Setup]
 ; 基础信息
@@ -19,7 +19,7 @@ PrivilegesRequired=lowest
 
 ; 生成的安装包属性
 OutputDir=C:\project\KApp\installer
-OutputBaseFilename=Karaoke_Setup_v1.0
+OutputBaseFilename=Karaoke_Setup_{#MyAppVersion}
 SetupIconFile=C:\project\KApp\mic.ico
 Compression=lzma2/ultra64
 SolidCompression=yes

@@ -2,7 +2,8 @@ import os
 import json
 import threading
 import time
-from flask import Flask, render_template, request, jsonify, Response, make_response
+import urllib.parse
+from flask import Flask, render_template, request, jsonify, Response, make_response, send_file
 from PyQt6.QtCore import QThread, pyqtSignal
 from chinese_utils import match_chinese, to_simplified, to_traditional
 
@@ -145,7 +146,7 @@ class WebServerThread(QThread):
                         "audio": song.get("audio", ""),
                         "inst": song.get("inst", ""),
                         "folder": song.get("folder", ""),
-                        "thumbnail": "",
+                        "thumbnail": song.get("thumbnail", ""),
                     })
 
             # --- YouTube results ---
@@ -261,6 +262,13 @@ class WebServerThread(QThread):
         def player_status():
             return jsonify(server_thread.player_state)
 
+        @app.route("/api/local_thumbnail")
+        def local_thumbnail_route():
+            thumb_path = request.args.get("path", "")
+            if thumb_path and os.path.exists(thumb_path):
+                return send_file(thumb_path)
+            return "", 404
+
         @app.route("/api/library")
         def get_library():
             return jsonify(server_thread.get_library_data())
@@ -374,6 +382,14 @@ class WebServerThread(QThread):
                                 except Exception:
                                     pass
 
+                            # Locate local thumbnail
+                            thumb_url = ""
+                            for tname in ["thumbnail.jpg", "thumbnail.webp", "thumbnail.png", "thumbnail.jpeg"]:
+                                tp = os.path.join(root, tname)
+                                if os.path.exists(tp):
+                                    thumb_url = f"/api/local_thumbnail?path={urllib.parse.quote(tp)}"
+                                    break
+
                             songs.append({
                                 "title": display_title,
                                 "title_s": to_simplified(display_title),
@@ -383,7 +399,8 @@ class WebServerThread(QThread):
                                 "inst": inst_path,
                                 "folder": root,
                                 "quality": quality,
-                                "duration": duration
+                                "duration": duration,
+                                "thumbnail": thumb_url
                             })
         return songs
 

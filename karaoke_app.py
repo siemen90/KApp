@@ -83,6 +83,8 @@ from dependency_manager import (
     DependencyDownloadThread,
     DependencyManager,
 )
+from app_updater import AppUpdateCheckThread, UpdateDialog
+from app_logger import init_logging, get_log_dir
 
 class AddSongDialog(QDialog):
     song_selected = pyqtSignal(str, str, str) # url, title, output_path
@@ -151,8 +153,8 @@ class AddSongDialog(QDialog):
         search_layout.addWidget(btn_search)
         
         left_layout = QVBoxLayout()
-        left_layout.addWidget(channel_group)
         left_layout.addWidget(search_group)
+        left_layout.addWidget(channel_group)
         
         h_layout.addLayout(left_layout, stretch=1)
         
@@ -325,7 +327,7 @@ class AddSongDialog(QDialog):
                         meta_line = "  ".join(meta_parts)
 
                         display_text = f" {display_title}\n  {meta_line}" if meta_line else f" {display_title}"
-                        local_icon = make_thumbnail_placeholder("🎵", bg="#14261d", fg="#00c853", w=80, h=48)
+                        local_icon = self.get_or_create_local_thumbnail(root, video_path)
                         item = QListWidgetItem(local_icon, display_text)
                         item.setData(257, video_path)
                         item.setData(258, audio_path)
@@ -335,6 +337,71 @@ class AddSongDialog(QDialog):
                         item.setData(262, quality)
                         item.setData(263, duration)
                         self.local_list.addItem(item)
+                    
+    @staticmethod
+    def get_or_create_local_thumbnail(folder, video_path):
+        """Finds or creates a thumbnail for a local song and returns a QIcon."""
+        for fname in ["thumbnail.jpg", "thumbnail.webp", "thumbnail.png", "thumbnail.jpeg"]:
+            p = os.path.join(folder, fname)
+            if os.path.exists(p):
+                pix = QPixmap(p)
+                if not pix.isNull():
+                    return QIcon(pix.scaled(80, 48, Qt.AspectRatioMode.KeepAspectRatioByExpanding, Qt.TransformationMode.SmoothTransformation))
+
+        if video_path:
+            base_no_ext = os.path.splitext(video_path)[0]
+            for ext in [".jpg", ".webp", ".png", ".jpeg"]:
+                cand = f"{base_no_ext}{ext}"
+                if os.path.exists(cand):
+                    pix = QPixmap(cand)
+                    if not pix.isNull():
+                        return QIcon(pix.scaled(80, 48, Qt.AspectRatioMode.KeepAspectRatioByExpanding, Qt.TransformationMode.SmoothTransformation))
+
+        thumb_target = os.path.join(folder, "thumbnail.jpg")
+
+        meta_file = os.path.join(folder, "metadata.json")
+        if os.path.exists(meta_file):
+            try:
+                with open(meta_file, "r", encoding="utf-8") as mf:
+                    meta = json.load(mf)
+                    vid_url = meta.get("url", "")
+                    m = re.search(r'(?:v=|\/)([0-9A-Za-z_-]{11})', vid_url)
+                    if m:
+                        vid_id = m.group(1)
+                        import urllib.request
+                        thumb_url = f"https://i.ytimg.com/vi/{vid_id}/mqdefault.jpg"
+                        req = urllib.request.Request(thumb_url, headers={'User-Agent': 'Mozilla/5.0'})
+                        with urllib.request.urlopen(req, timeout=3) as resp:
+                            data = resp.read()
+                            with open(thumb_target, 'wb') as tf:
+                                tf.write(data)
+                            pix = QPixmap()
+                            pix.loadFromData(data)
+                            if not pix.isNull():
+                                return QIcon(pix.scaled(80, 48, Qt.AspectRatioMode.KeepAspectRatioByExpanding, Qt.TransformationMode.SmoothTransformation))
+            except Exception:
+                pass
+
+        if video_path and os.path.exists(video_path):
+            try:
+                import subprocess
+                app_dir = os.path.dirname(os.path.abspath(__file__))
+                ffmpeg_bin = os.path.join(app_dir, "ffmpeg.exe")
+                if not os.path.exists(ffmpeg_bin):
+                    ffmpeg_bin = "ffmpeg"
+                subprocess.run(
+                    [ffmpeg_bin, "-y", "-ss", "00:00:03", "-i", video_path, "-vframes", "1", "-vf", "scale=160:96", "-q:v", "3", thumb_target],
+                    capture_output=True,
+                    timeout=4
+                )
+                if os.path.exists(thumb_target):
+                    pix = QPixmap(thumb_target)
+                    if not pix.isNull():
+                        return QIcon(pix.scaled(80, 48, Qt.AspectRatioMode.KeepAspectRatioByExpanding, Qt.TransformationMode.SmoothTransformation))
+            except Exception:
+                pass
+
+        return make_thumbnail_placeholder("🎵", bg="#14261d", fg="#00c853", w=80, h=48)
                     
     @staticmethod
     def _probe_video_quality(video_path):
@@ -909,28 +976,76 @@ class SettingsDialog(QDialog):
         self.storage_label = QLabel(SettingsManager.get_storage_space(self.settings.get_download_dir()))
         self.storage_label.setStyleSheet("color: #00c853; font-weight: bold;")
         form_layout.addRow(t("storage_free") + ":", self.storage_label)
+
+        # 5. Web Server Port
+        port_layout = QVBoxLayout()
+        self.port_spin = QSpinBox()
+        self.port_spin.setRange(1024, 65535)
+        self.port_spin.setValue(self.settings.get_web_port())
+        port_layout.addWidget(self.port_spin)
+        port_hint = QLabel(t("web_port_hint"))
+        port_hint.setStyleSheet("color: #8888aa; font-size: 11px;")
+        port_layout.addWidget(port_hint)
+        form_layout.addRow(t("web_port") + ":", port_layout)
         
         layout.addLayout(form_layout)
         
-        # 5. Dependencies & External Tools (FFmpeg & Deno)
+        # 6. Dependencies & External Tools (FFmpeg & Deno)
         self.setup_dependencies_ui(layout)
         layout.addStretch()
         
         # Bottom row: Version on the left, action buttons on the right
         btn_box = QHBoxLayout()
+        btn_box.setAlignment(Qt.AlignmentFlag.AlignVCenter)
         self.version_label = QLabel(SettingsManager.get_version())
         self.version_label.setStyleSheet("color: #888899; font-size: 11px; font-family: Consolas, monospace;")
         btn_box.addWidget(self.version_label)
+
+        self.btn_check_app_update = QPushButton(t("btn_check_app_update"))
+        self.btn_check_app_update.setStyleSheet("padding: 4px 10px; font-size: 11px;")
+        self.btn_check_app_update.clicked.connect(self.check_app_update_manual)
+        btn_box.addWidget(self.btn_check_app_update)
+
+        self.btn_open_logs = QPushButton(t("btn_open_logs"))
+        self.btn_open_logs.setStyleSheet("padding: 4px 10px; font-size: 11px;")
+        self.btn_open_logs.clicked.connect(lambda: os.startfile(get_log_dir()))
+        btn_box.addWidget(self.btn_open_logs)
 
         btn_box.addStretch()
         btn_cancel = QPushButton(t("btn_cancel"))
         btn_cancel.clicked.connect(self.reject)
         btn_save = QPushButton(t("btn_save"))
-        btn_save.setStyleSheet("background-color: #6c63ff; color: white; padding: 6px 18px; font-weight: bold; border-radius: 4px;")
         btn_save.clicked.connect(self.save_settings)
         btn_box.addWidget(btn_cancel)
         btn_box.addWidget(btn_save)
         layout.addLayout(btn_box)
+
+    def check_app_update_manual(self):
+        self.btn_check_app_update.setEnabled(False)
+        self.btn_check_app_update.setText(t("status_checking"))
+        self.app_update_thread = AppUpdateCheckThread(current_version=SettingsManager.get_version(), is_manual=True, parent=self)
+        self.app_update_thread.update_checked.connect(self.on_manual_update_checked)
+        self.app_update_thread.start()
+
+    def on_manual_update_checked(self, res: dict):
+        self.btn_check_app_update.setEnabled(True)
+        self.btn_check_app_update.setText(t("btn_check_app_update"))
+        self.btn_check_app_update.setStyleSheet("padding: 4px 10px; font-size: 11px;")
+        if res.get("has_update"):
+            dlg = UpdateDialog(res, parent=self)
+            dlg.exec()
+        elif res.get("success"):
+            QMessageBox.information(
+                self,
+                t("app_up_to_date_title"),
+                t("app_up_to_date_msg").format(ver=res.get("current_version", ""))
+            )
+        else:
+            QMessageBox.warning(
+                self,
+                t("update_check_failed_title"),
+                t("update_check_failed_msg")
+            )
 
     def browse_download_dir(self):
         cur = self.dl_edit.text()
@@ -943,11 +1058,13 @@ class SettingsDialog(QDialog):
         new_lang = self.lang_combo.currentData()
         new_q = self.quality_combo.currentText()
         new_dl = self.dl_edit.text().strip()
+        new_port = self.port_spin.value()
         
         self.settings.set_language(new_lang)
         self.settings.set_video_quality(new_q)
         if new_dl:
             self.settings.set_download_dir(new_dl)
+        self.settings.set_web_port(new_port)
             
         self.settings_saved.emit()
         self.accept()
@@ -1474,14 +1591,16 @@ class PlayerWindow(QMainWindow):
             self.btn_toggle_vocals.setText(t("vocals_on"))
         if hasattr(self, 'qr_label') and self.qr_label:
             ip = get_local_ip()
-            url = f"http://{ip}:8080"
+            port = SettingsManager().get_web_port()
+            url = f"http://{ip}:{port}"
             self.qr_label.setToolTip(t("scan_qr").format(url=url))
             if hasattr(self, 'qr_url_label') and self.qr_url_label:
                 self.qr_url_label.setText(url)
         
     def setup_qr_code(self):
         ip = get_local_ip()
-        url = f"http://{ip}:8080"
+        port = SettingsManager().get_web_port()
+        url = f"http://{ip}:{port}"
         qr = qrcode.QRCode(version=1, box_size=4, border=1)
         qr.add_data(url)
         qr.make(fit=True)
@@ -1608,7 +1727,7 @@ class KaraokeMainWindow(QMainWindow):
         # Listen to player state changes to update the queue highlight
         self.player_window.player.playbackStateChanged.connect(self.update_playing_row_highlight)
         
-        self.web_server = WebServerThread()
+        self.web_server = WebServerThread(port=SettingsManager().get_web_port())
         self.web_server.play_song_requested.connect(self.play_from_queue_by_index)
         self.web_server.toggle_play_requested.connect(self.player_window.toggle_play)
         self.web_server.stop_requested.connect(self.player_window.stop_playback)
@@ -1635,6 +1754,10 @@ class KaraokeMainWindow(QMainWindow):
         self.init_ui()
         self.retranslate_ui()
         self.player_window.show()
+
+        # Check for app updates on startup
+        self.app_update_thread = None
+        QTimer.singleShot(2500, self.check_app_update_on_startup)
         
     def init_ui(self):
         central_widget = QWidget()
@@ -2357,7 +2480,20 @@ class KaraokeMainWindow(QMainWindow):
 
     def on_local_song_deleted(self, audio_path):
         self.remove_from_queue_by_path(audio_path)
-        self.web_server.update_library()  # <-- Sync new library state to web
+        self.web_server.update_library()
+
+    def check_app_update_on_startup(self):
+        try:
+            self.app_update_thread = AppUpdateCheckThread(current_version=SettingsManager.get_version(), is_manual=False, parent=self)
+            self.app_update_thread.update_checked.connect(self.on_app_update_checked)
+            self.app_update_thread.start()
+        except Exception as e:
+            print(f"Startup update check error: {e}")
+
+    def on_app_update_checked(self, res: dict):
+        if res.get("has_update"):
+            dlg = UpdateDialog(res, parent=self)
+            dlg.exec()
 
     def closeEvent(self, event):
         DependencyManager.get_instance().cancel_all()
@@ -2369,6 +2505,7 @@ class KaraokeMainWindow(QMainWindow):
 if __name__ == "__main__":
     # 强制将工作路径切换到当前运行的 exe 目录
     os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
+    init_logging()
 
     # 声明独立的 Windows 应用 ID，确保任务栏正确显示 mic 图标
     import ctypes

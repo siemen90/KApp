@@ -4,10 +4,12 @@ venv/
 env/
 ENV/
 
-# Large binaries and executables (exceeds GitHub limit & should not be in git)
+# Large binaries, executables and release archives (keep out of git)
 **/*.exe
 **/*.apk
 **/*.jar
+**/*.zip
+**/*.7z
 ffmpeg.exe
 ffprobe.exe
 deno.exe
@@ -22,6 +24,12 @@ build/
 *.build/
 *.spec
 installer/Output/
+installer/*.zip
+installer/*.7z
+
+# Local cleanup and staging (not tracked in git)
+_cleanup/
+local_cleanup/
 
 # Python bytecode and caches
 __pycache__/
@@ -39,6 +47,7 @@ downloads/
 # Personal settings and local state
 settings.json
 *.log
+logs/
 
 # IDE and OS metadata
 .vscode/

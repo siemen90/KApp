@@ -146,6 +146,7 @@ class YouTubeKaraokeSource:
             **self.ydl_opts,
             'format': format_selector,
             'outtmpl': outtmpl,
+            'writethumbnail': True,
             'quiet': True,
         }
         
@@ -170,13 +171,41 @@ class YouTubeKaraokeSource:
             video_file = f"{base}.{video_ext}"
             wav_file = f"{base}.wav"
             
+            # Save thumbnail image in song folder
+            song_folder = os.path.dirname(video_file)
+            thumb_url = self._extract_thumbnail(info)
+            thumb_target = os.path.join(song_folder, "thumbnail.jpg")
+            
+            # If yt-dlp saved a thumbnail with another extension (e.g. .webp), keep/convert it
+            for ext in [".webp", ".jpg", ".jpeg", ".png"]:
+                candidate = f"{base}{ext}"
+                if os.path.exists(candidate) and not os.path.exists(thumb_target):
+                    try:
+                        import shutil
+                        shutil.copyfile(candidate, thumb_target)
+                        break
+                    except Exception:
+                        pass
+            
+            # If still not present, download it directly from URL
+            if not os.path.exists(thumb_target) and thumb_url:
+                try:
+                    import urllib.request
+                    req = urllib.request.Request(thumb_url, headers={'User-Agent': 'Mozilla/5.0'})
+                    with urllib.request.urlopen(req, timeout=5) as r:
+                        with open(thumb_target, 'wb') as tf:
+                            tf.write(r.read())
+                except Exception as e:
+                    print(f"Error downloading thumbnail: {e}")
+
             # Save metadata.json in song folder
             try:
-                song_folder = os.path.dirname(video_file)
                 meta_file = os.path.join(song_folder, "metadata.json")
                 meta_data = {
                     "title": info.get("title", os.path.basename(base)),
                     "url": video_url,
+                    "thumbnail_url": thumb_url,
+                    "thumbnail": "thumbnail.jpg" if os.path.exists(thumb_target) else "",
                     "duration": int(info.get("duration") or 0),
                     "quality": target_quality,
                     "height": info.get("height"),
