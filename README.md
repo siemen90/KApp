@@ -128,25 +128,14 @@ Or simply double-click `run.bat`.
 
 ---
 
-## 📦 Building & Publishing Releases
+## 📦 Building
 
-### 1. Build Standalone Executable
+### Build Standalone Executable
 Compile using Nuitka:
 ```bash
 build_nocmd.bat
 ```
 The compiled standalone build will be generated in `dist\karaoke_app.dist\`.
-
-### 2. Generate Installer & Portable ZIP
-- **Installer (`.exe`)**: Open `installer.iss` in Inno Setup Compiler and click **Compile** (output is saved to `installer/`).
-- **Portable ZIP (`.zip`)**: Double-click `create_portable_zip.bat` to automatically bundle `dist\karaoke_app.dist\` into `installer/Karaoke_App_Portable_<version>.zip`.
-
-### 3. Publish to GitHub Releases
-1. Navigate to: `https://github.com/siemen90/KApp/releases`
-2. Click **"Draft a new release"**.
-3. Choose a tag matching your build version (e.g., `202610110508`).
-4. Drag and drop both the **Installer (`.exe`)** and **Portable ZIP (`.zip`)** from the `installer/` directory.
-5. Click **Publish release**. All connected users will be notified on their next app startup!
 
 ---
 
