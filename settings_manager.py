@@ -12,11 +12,11 @@ DEFAULT_LANGUAGE = "en"
 DEFAULT_DOWNLOAD_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "downloads")
 DEFAULT_WEB_PORT = 8080
 
-# Version format: YYYYMMDDHHMM (24-hour format)
-APP_VERSION = "202610111606"
+# Version format: YYYYMMDD
+APP_VERSION = "20261011"
 
 def get_app_version() -> str:
-    """Returns application version formatted as YYYYMMDDHHMM (24-hour format)."""
+    """Returns application version formatted as YYYYMMDD."""
     try:
         app_dir = os.path.dirname(os.path.abspath(__file__))
         py_files = [
@@ -27,14 +27,14 @@ def get_app_version() -> str:
         if py_files:
             latest_mtime = max(os.path.getmtime(p) for p in py_files)
             dt = datetime.datetime.fromtimestamp(latest_mtime)
-            dynamic_ver = dt.strftime("%Y%m%d%H%M")
-            return max(dynamic_ver, APP_VERSION)
+            dynamic_ver = dt.strftime("%Y%m%d")
+            return max(dynamic_ver, APP_VERSION[:8])
     except Exception:
         pass
-    return APP_VERSION
+    return APP_VERSION[:8]
 
 def get_pe_version(ver_str: str = None) -> str:
-    """Converts YYYYMMDDHHMM version string to X.X.X.X suitable for Windows PE / Nuitka."""
+    """Converts YYYYMMDD version string to X.X.X.X suitable for Windows PE / Nuitka."""
     if ver_str is None:
         ver_str = get_app_version()
     ver_str = str(ver_str).strip()
@@ -44,22 +44,21 @@ def get_pe_version(ver_str: str = None) -> str:
         y = int(ver_str[0:4])
         m = int(ver_str[4:6])
         d = int(ver_str[6:8])
-        hm = int(ver_str[8:12]) if len(ver_str) >= 12 and ver_str[8:12].isdigit() else 0
-        return f"{y}.{m}.{d}.{hm}"
+        return f"{y}.{m}.{d}.0"
     return "1.0.0.0"
 
 def sync_version_files(target_version: str = None) -> dict:
     """
     Synchronizes APP_VERSION in settings_manager.py and MyAppVersion in installer.iss
-    with target_version (defaulting to current build time YYYYMMDDHHMM).
+    with target_version (defaulting to current date YYYYMMDD).
     Returns dict with 'app_version' and 'pe_version'.
     """
     app_dir = os.path.dirname(os.path.abspath(__file__))
-    now_str = datetime.datetime.now().strftime("%Y%m%d%H%M")
+    today_str = datetime.datetime.now().strftime("%Y%m%d")
     if target_version:
-        new_version = target_version
+        new_version = target_version[:8]
     else:
-        new_version = max(now_str, get_app_version())
+        new_version = max(today_str, get_app_version()[:8])
 
     pe_ver = get_pe_version(new_version)
 

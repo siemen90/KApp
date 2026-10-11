@@ -15,7 +15,7 @@ for /f "tokens=1,2" %%a in ('python -c "from settings_manager import print_sync_
     set "APP_VER=%%a"
     set "PE_VER=%%b"
 )
-if "%APP_VER%"=="" set "APP_VER=202610110000"
+if "%APP_VER%"=="" set "APP_VER=20261011"
 if "%PE_VER%"=="" set "PE_VER=2026.10.11.0"
 echo 目标应用版本 (App Version): %APP_VER%
 echo Windows PE 文件版本 (PE Version): %PE_VER%

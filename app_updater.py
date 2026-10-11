@@ -34,9 +34,17 @@ def parse_version_tuple(version_str: str) -> tuple:
     Examples:
         'v1.0' -> (1, 0)
         'v1.0.1' -> (1, 0, 1)
-        'v20261011' -> (20261011,)
+        '20261011' -> (2026, 10, 11)
+        'v20261011' -> (2026, 10, 11)
+        'v2026.10.11' -> (2026, 10, 11)
     """
     clean = re.sub(r'^[vV]', '', str(version_str).strip())
+    # 8-digit YYYYMMDD date format
+    if len(clean) == 8 and clean.isdigit():
+        return (int(clean[:4]), int(clean[4:6]), int(clean[6:8]))
+    # 12-digit YYYYMMDDHHMM date format
+    if len(clean) == 12 and clean.isdigit():
+        return (int(clean[:4]), int(clean[4:6]), int(clean[6:8]), int(clean[8:12]))
     numbers = re.findall(r'\d+', clean)
     if numbers:
         return tuple(int(n) for n in numbers)

@@ -42,7 +42,7 @@ An all-in-one AI-powered desktop karaoke player and vocal separation studio buil
 - **Startup Check**: Automatically checks for new releases on your GitHub page in the background upon launch.
 - **Update Dialog**: Displays version comparison (`current ➔ latest`), release title, and changelog with a 1-click download button.
 - **Manual Check**: Check for updates anytime in the Settings dialog.
-- **Standardized Versioning**: Versions follow the 24-hour timestamp format: `YYYYMMDDHHMM` (e.g. `202610110508`).
+- **Standardized Versioning**: Versions follow the date format: `YYYYMMDD` (e.g. `20261011`).
 
 ### 📝 7. Comprehensive Event Logging
 - **Automated Log Files**: Every session generates a timestamped log in `logs/YYYYMMDDHHMM.log`.
