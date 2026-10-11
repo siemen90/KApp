@@ -265,8 +265,12 @@ class WebServerThread(QThread):
         @app.route("/api/local_thumbnail")
         def local_thumbnail_route():
             thumb_path = request.args.get("path", "")
-            if thumb_path and os.path.exists(thumb_path):
-                return send_file(thumb_path)
+            if thumb_path:
+                from settings_manager import SettingsManager
+                allowed_dir = os.path.abspath(SettingsManager().get_download_dir())
+                abs_path = os.path.abspath(thumb_path)
+                if abs_path.startswith(allowed_dir) and os.path.isfile(abs_path):
+                    return send_file(abs_path)
             return "", 404
 
         @app.route("/api/library")
