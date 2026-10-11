@@ -13,7 +13,7 @@ DEFAULT_DOWNLOAD_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 
 DEFAULT_WEB_PORT = 8080
 
 # Version format: YYYYMMDDHHMM (24-hour format)
-APP_VERSION = "202610110508"
+APP_VERSION = "202610111606"
 
 def get_app_version() -> str:
     """Returns application version formatted as YYYYMMDDHHMM (24-hour format)."""
@@ -32,6 +32,81 @@ def get_app_version() -> str:
     except Exception:
         pass
     return APP_VERSION
+
+def get_pe_version(ver_str: str = None) -> str:
+    """Converts YYYYMMDDHHMM version string to X.X.X.X suitable for Windows PE / Nuitka."""
+    if ver_str is None:
+        ver_str = get_app_version()
+    ver_str = str(ver_str).strip()
+    if ver_str.count(".") == 3 and all(p.isdigit() and 0 <= int(p) <= 65535 for p in ver_str.split(".")):
+        return ver_str
+    if len(ver_str) >= 8 and ver_str[:8].isdigit():
+        y = int(ver_str[0:4])
+        m = int(ver_str[4:6])
+        d = int(ver_str[6:8])
+        hm = int(ver_str[8:12]) if len(ver_str) >= 12 and ver_str[8:12].isdigit() else 0
+        return f"{y}.{m}.{d}.{hm}"
+    return "1.0.0.0"
+
+def sync_version_files(target_version: str = None) -> dict:
+    """
+    Synchronizes APP_VERSION in settings_manager.py and MyAppVersion in installer.iss
+    with target_version (defaulting to current build time YYYYMMDDHHMM).
+    Returns dict with 'app_version' and 'pe_version'.
+    """
+    app_dir = os.path.dirname(os.path.abspath(__file__))
+    now_str = datetime.datetime.now().strftime("%Y%m%d%H%M")
+    if target_version:
+        new_version = target_version
+    else:
+        new_version = max(now_str, get_app_version())
+
+    pe_ver = get_pe_version(new_version)
+
+    # 1. Update settings_manager.py APP_VERSION
+    sm_path = os.path.join(app_dir, "settings_manager.py")
+    if os.path.exists(sm_path):
+        try:
+            with open(sm_path, "r", encoding="utf-8") as f:
+                content = f.read()
+            import re
+            new_content = re.sub(
+                r'APP_VERSION\s*=\s*"[^"]*"',
+                f'APP_VERSION = "{new_version}"',
+                content,
+                count=1
+            )
+            if new_content != content:
+                with open(sm_path, "w", encoding="utf-8") as f:
+                    f.write(new_content)
+        except Exception as e:
+            print(f"Warning: Failed to update APP_VERSION in settings_manager.py: {e}")
+
+    # 2. Update installer.iss #define MyAppVersion
+    iss_path = os.path.join(app_dir, "installer.iss")
+    if os.path.exists(iss_path):
+        try:
+            with open(iss_path, "r", encoding="utf-8") as f:
+                content = f.read()
+            import re
+            new_content = re.sub(
+                r'#define MyAppVersion\s*"[^"]*"',
+                f'#define MyAppVersion "{new_version}"',
+                content,
+                count=1
+            )
+            if new_content != content:
+                with open(iss_path, "w", encoding="utf-8") as f:
+                    f.write(new_content)
+        except Exception as e:
+            print(f"Warning: Failed to update MyAppVersion in installer.iss: {e}")
+
+    return {"app_version": new_version, "pe_version": pe_ver}
+
+def print_sync_versions():
+    """Prints app_version and pe_version separated by space for batch script consumption."""
+    res = sync_version_files()
+    print(f"{res['app_version']} {res['pe_version']}")
 
 class SettingsManager:
     _instance = None

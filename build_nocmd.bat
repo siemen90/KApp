@@ -1,4 +1,5 @@
 @echo off
+setlocal
 cd /d %~dp0
 call venv\Scripts\activate
 
@@ -8,18 +9,30 @@ echo ===================================================
 python -m pip install --upgrade nuitka
 
 echo ===================================================
-echo 1. 正在将 mic.svg 转换为 Windows 程序图标 mic.ico...
+echo 1. 正在同步应用版本与 Windows PE 资源版本...
+echo ===================================================
+for /f "tokens=1,2" %%a in ('python -c "from settings_manager import print_sync_versions; print_sync_versions()"') do (
+    set "APP_VER=%%a"
+    set "PE_VER=%%b"
+)
+if "%APP_VER%"=="" set "APP_VER=202610110000"
+if "%PE_VER%"=="" set "PE_VER=2026.10.11.0"
+echo 目标应用版本 (App Version): %APP_VER%
+echo Windows PE 文件版本 (PE Version): %PE_VER%
+
+echo ===================================================
+echo 2. 正在将 mic.svg 转换为 Windows 程序图标 mic.ico...
 echo ===================================================
 python -c "from PyQt6.QtWidgets import QApplication; from PyQt6.QtGui import QIcon; from PIL import Image; import sys; app=QApplication(sys.argv); QIcon('mic.svg').pixmap(256, 256).save('temp_icon.png'); Image.open('temp_icon.png').save('mic.ico', format='ICO', sizes=[(256, 256), (128, 128), (64, 64), (48, 48), (32, 32), (16, 16)])"
 if exist temp_icon.png del temp_icon.png
 
 echo ===================================================
-echo 2. 正在清理旧构建...
+echo 3. 正在清理旧构建...
 echo ===================================================
 if exist dist rmdir /s /q dist
 
 echo ===================================================
-echo 3. 正在打包（已恢复 torch._decomp 支持）...
+echo 4. 正在打包（应用版本: %APP_VER%, PE 版本: %PE_VER%）...
 echo ===================================================
 
 python -m nuitka ^
@@ -30,6 +43,11 @@ python -m nuitka ^
     --include-qt-plugins=multimedia,imageformats ^
     --enable-plugin=torch ^
     --windows-icon-from-ico=mic.ico ^
+    --company-name="KaraokeApp" ^
+    --product-name="Karaoke Player" ^
+    --file-description="Karaoke Player Application" ^
+    --file-version=%PE_VER% ^
+    --product-version=%PE_VER% ^
     --no-deployment-flag=excluded-module-usage ^
     --nofollow-import-to=sympy ^
     --nofollow-import-to=torch._dynamo ^
@@ -61,7 +79,7 @@ python -m nuitka ^
     karaoke_app.py
 
 echo ===================================================
-echo 4. 正在补充多媒体与模型运行依赖...
+echo 5. 正在补充多媒体与模型运行依赖...
 echo ===================================================
 if not exist "dist\karaoke_app.dist\deno.exe" (
     if exist "deno.exe" copy /Y "deno.exe" "dist\karaoke_app.dist\" >nul 2>&1
@@ -90,5 +108,5 @@ if not exist "dist\karaoke_app.dist\demucs\remote" (
 copy /Y "venv\Lib\site-packages\PyQt6\Qt6\bin\av*.dll" "dist\karaoke_app.dist\" >nul 2>&1
 copy /Y "venv\Lib\site-packages\PyQt6\Qt6\bin\sw*.dll" "dist\karaoke_app.dist\" >nul 2>&1
 
-echo 打包完成！
+echo 打包完成！应用版本: %APP_VER% (PE: %PE_VER%)
 pause

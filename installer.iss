@@ -1,7 +1,7 @@
 ; Karaoke 软件安装包配置脚本
 
 #define MyAppName "Karaoke Player"
-#define MyAppVersion "202610110508"
+#define MyAppVersion "202610111606"
 #define MyAppPublisher "KaraokeApp"
 #define MyAppExeName "Karaoke_App.exe"
 
